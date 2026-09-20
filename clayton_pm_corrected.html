@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Steam Generator PM</title>
+<style>
+:root{--red:#b51f2e;--bg:#f3f4f6;--card:#fff;--line:#d6d9df;--text:#17191c}
+*{box-sizing:border-box} body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;background:var(--bg);color:var(--text)}
+header{background:#fff;border-bottom:4px solid var(--red);padding:18px 22px;position:sticky;top:0;z-index:5}
+header h1{font-size:24px;margin:0} header p{margin:4px 0 0;color:#666}
+main{max-width:1100px;margin:auto;padding:18px}.card{background:var(--card);border-radius:14px;padding:18px;margin-bottom:16px;box-shadow:0 1px 5px #0001}
+h2{margin:0 0 14px;font-size:20px}.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+label{font-weight:600;font-size:14px} input,textarea,select{width:100%;font:inherit;padding:12px;border:1px solid var(--line);border-radius:9px;background:white;margin-top:5px}
+.item{display:grid;grid-template-columns:minmax(260px,1fr) minmax(120px,180px) auto;gap:10px;align-items:center;padding:11px 0;border-bottom:1px solid #eee}
+.item:last-child{border-bottom:0}.name{font-weight:600}.sub{font-weight:400;color:#555;font-size:13px}
+.status{display:flex;gap:5px}.status button{min-width:44px;height:44px;border:1px solid #bbb;background:#fff;border-radius:8px;font-weight:700;font-size:15px}
+.status button.on{background:#222;color:white;border-color:#222}.status button[data-v="U"].on{background:#a51d27}.status button[data-v="R"].on{background:#555}
+table{border-collapse:collapse;width:100%;min-width:760px}th,td{border:1px solid #ccc;padding:7px;text-align:center}th:first-child,td:first-child{text-align:left;position:sticky;left:0;background:#fff}
+td input{min-width:72px;padding:8px;margin:0}.scroll{overflow:auto}
+.actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}.actions button{padding:13px 18px;border:0;border-radius:9px;font-weight:700;font-size:16px}.primary{background:var(--red);color:white}.secondary{background:#222;color:white}
+.note{color:#666;font-size:13px}.removed{font-size:13px;color:#666}.deficiency{display:none;grid-column:1/-1}.deficiency.show{display:block}.complete-msg{display:none;padding:12px;border:1px solid #aaa;border-radius:9px;margin-top:12px}.complete-msg.show{display:block}
+@media(max-width:750px){.grid{grid-template-columns:1fr}.item{grid-template-columns:1fr}.status{justify-content:flex-start}}
+canvas.signature{width:100%;height:130px;border:1px solid var(--line);border-radius:9px;background:#fff;touch-action:none}
+.sig-actions{margin-top:6px}.sig-actions button{border:1px solid #bbb;background:#fff;border-radius:7px;padding:7px 10px}
+@media print{
+header{position:static;padding:10px 14px;border-bottom:3px solid #000}header h1{font-size:20px}header p{font-size:11px;line-height:1.35}
+.actions,.note,.removed,.sig-actions,.complete-msg{display:none!important}
+body{background:#fff;font-size:10px}main{max-width:none;padding:8px}.card{box-shadow:none;border:1px solid #777;border-radius:0;padding:10px;margin-bottom:8px;break-inside:avoid}
+h2{font-size:14px;margin-bottom:7px}.grid{gap:6px}.item{grid-template-columns:minmax(220px,1fr) 120px auto;padding:4px 0;gap:5px}
+.status button{display:none}.status button.on{display:inline-block!important;min-width:30px;height:26px;font-size:10px;background:#fff!important;color:#000!important;border:1px solid #000}
+input,textarea{border:0;border-bottom:1px solid #777;border-radius:0;padding:3px;font-size:10px}table{min-width:0;font-size:9px}th,td{padding:3px}td input{min-width:35px;padding:2px}
+.deficiency{font-size:9px}canvas.signature{height:70px;border:1px solid #777}
+}
+</style>
+</head>
+<body>
+<header>
+<h1>Clayton Industries</h1>
+<p><strong>Steam Generator Preventative Maintenance<br>Inspection Check Chart</strong><br>
+17477 Hurley St. City of Industries, CA, 91744<br>
+Phone: 626-435-1200 &nbsp;&nbsp; Fax: 626-435-0180</p>
+</header>
+<main>
+<section class="card"><h2>Inspection Information</h2><div class="grid">
+<label>Customer<input name="customer"></label><label>Location<input name="location"></label>
+<label>Telephone<input name="telephone" inputmode="tel"></label><label>Date<input name="date" type="date"></label>
+<label>Model<input name="model"></label><label>Serial Number<input name="serial"></label>
+<label>Hour Meter<input name="hours" inputmode="decimal"></label><label>Reference Service Order<input name="serviceOrder"></label>
+<label>Hours of Operation / Day<input name="opDay" inputmode="decimal"></label><label>Hours of Operation / Week<input name="opWeek" inputmode="decimal"></label>
+</div></section>
+
+<section class="card"><h2>PM Checklist</h2><p class="note">Tap S = Satisfactory, U = Unsatisfactory, R = Repaired, or N/A. Reading fields appear where useful.</p><div id="checklist"></div></section>
+
+<section class="card"><h2>Combustion Checks</h2><div class="scroll"><table id="comb"><thead><tr><th>Reading</th><th>20%</th><th>40%</th><th>60%</th><th>80%</th><th>100%</th></tr></thead><tbody></tbody></table></div>
+<br><div class="scroll"><table id="comb2"><thead><tr><th>Reading</th><th>20%</th><th>100%</th></tr></thead><tbody></tbody></table></div>
+<br><div class="scroll"><table id="siemens"><thead><tr><th>Siemens Settings</th><th>20</th><th>30</th><th>40</th><th>50</th><th>60</th><th>70</th><th>80</th><th>90</th><th>100</th></tr></thead><tbody></tbody></table></div></section>
+
+<section class="card"><h2>Remarks & Sign-off</h2><label>Remarks<textarea name="remarks" rows="5"></textarea></label><div class="grid" style="margin-top:12px">
+<label>Customer Representative<input name="customerRep"></label><label>Clayton Representative<input name="claytonRep"></label>
+<label>Customer Signature<canvas class="signature" id="customerSignature"></canvas><div class="sig-actions"><button type="button" onclick="clearSignature('customerSignature')">Clear Signature</button></div></label>
+<label>Clayton Representative Signature<canvas class="signature" id="claytonSignature"></canvas><div class="sig-actions"><button type="button" onclick="clearSignature('claytonSignature')">Clear Signature</button></div></label>
+<label>Customer Email (optional)<input name="customerEmail" type="email" placeholder="customer@example.com"></label>
+<label style="display:flex;align-items:center;gap:10px;margin-top:24px"><input name="sendCustomer" type="checkbox" style="width:auto;margin:0"> Send customer a copy when completed</label>
+</div></section>
+
+<section class="card"><div class="actions"><button class="secondary" onclick="saveProgress()">Save Progress</button><button class="secondary" onclick="window.print()">Generate Final Report / PDF</button><button class="primary" onclick="completeInspection()">Complete Inspection</button></div><div id="completeMsg" class="complete-msg"></div>
+</section>
+</main>
+<script>
+const items=[
+["1","Feedwater Treatment",""],["1.a","pH (10.5–12.5)","Reading"],["1.b","Sulfite SO3 (50–100 ppm)","ppm"],["1.c","TDS (3000–6000 ppm)","ppm"],["1.d","Hardness (0)","Reading"],["1.f","Feedwater Test Log Maintained",""],
+["2","Chemical Pump Operation","Hi / Low"],["2.a","Pump Settings","Stroke / Rate"],["3","Chemical Manufacturer","Entry"],["4","Chemical Supply Quantity",""],["5","Mixing Tank or Drum Covered",""],["6","Feedwater Strainers Cleaned",""],["7","Feedpump Check Valves",""],["7.a","Seats",""],["7.b","Discs",""],["7.c","Springs",""],["7.d","Caps",""],["8","Pump Diaphragm Nuts Tightened **",""],["9","Pump Heads Flushed",""],["10","Pump Diaphragms **",""],["11","Pump Oil Level",""],["12","Crankcase Oil Vent Open",""],["13","Pump Cooling Water Strainer Cleaned",""],["14","Blower Rotor Cleaned",""],["15","Motor(s) Alignment / Belt Tension",""],["16","Blower / Motor Bearings Greased",""],["19","Burner Manifold Cleaned / Set Burner Turn","Entry"],["20","Burner Turns Open",""],["23","Oil Level Interlock Switch",""],["24","Water Pump Relief Setting","psi"],["25","Snubber / Surge Chamber Operation **",""],["26","Hotwell Temperature","°F"],["27","Water Level Controls",""],["28","SCR / DA Pressure","psi"],["29","Receiver Tank Partially Drained",""],["30","Booster Pump Seals",""],["31","Modulating Motor Operation / Servo",""],["34","Gas Valve Actuator Operation",""],["35","Steam Pressure Set Point - Cut in","psi"],["36","Steam Pressure Set Point - Cut out","psi"],["37","Modulating Pressure Set Point (100%)","psi"],["38","Limit Pressure Switch","psi"],["39","Back Pressure Regulator","psi"],["40","Gauges / Thermometers",""],["41","Method of Shutdown","Dry / Wet"],["42","Pilot Pressure","WCI"],["43","Pilot Signal","Entry"],["44","MTLC 1 / Ring Thermostat","sec."],["45","MTLC 2",""],["50","Cooling Air Pressure Switch",""],["51","Air Pressure Interlock Switch",""],["52","ATS","Off at / Set to °F"],["53","Fuel Type","Entry"]
+];
+const c1=["Upper Volute (WCI)","Lower Volute (WCI)","Burner Gas Pressure (WCI)","Mixer Gas Pressure (WCI / LNB)","Regulator Pressure","Fuel Valve Angle (°)","Air Damper Angle (%)","CO (PPM)","CO2 %","NOX (PPM)","O2%","Smoke No. (1,2,3 etc.)"];
+const c2=["LNB Manifold Temp. (°F)","VSD Frequency (HZ)","Comb. Efficiency (%)","Burner Oil Pressure (PSI)","Stack Draft (WCI)","Stack Temperature (°F)","Feed Pressure (PSI)","Feed Pump Speed (RPM)","Main Flame Signal","Trap Timing (SEC/MIN)"];
+function input(key){return `<input data-key="${key}" inputmode="decimal">`}
+document.getElementById("checklist").innerHTML=items.map((x,i)=>`<div class="item"><div class="name">${x[0]}. ${x[1]} ${x[2]?`<div class="sub">${x[2]}</div>`:""}</div><div>${x[2]?input("read_"+i):""}</div><div class="status">${["S","U","R","N/A"].map(v=>`<button type="button" data-v="${v}" data-key="status_${i}">${v}</button>`).join("")}</div><div class="deficiency"><input data-key="def_${i}" placeholder="Describe deficiency / corrective action"></div></div>`).join("");
+document.querySelectorAll(".status button").forEach(b=>b.onclick=()=>{b.parentElement.querySelectorAll("button").forEach(x=>x.classList.remove("on"));b.classList.add("on");let box=b.closest(".item").querySelector(".deficiency");box.classList.toggle("show",b.dataset.v==="U"||b.dataset.v==="R");saveData()});
+function rows(arr,cols,prefix){return arr.map((r,i)=>`<tr><td>${r}</td>${Array.from({length:cols},(_,j)=>`<td>${input(prefix+"_"+i+"_"+j)}</td>`).join("")}</tr>`).join("")}
+document.querySelector("#comb tbody").innerHTML=rows(c1,5,"c1");
+document.querySelector("#comb2 tbody").innerHTML=rows(c2,2,"c2");
+document.querySelector("#siemens tbody").innerHTML=["Air","Gas"].map((r,i)=>`<tr><td>${r}</td>${Array.from({length:9},(_,j)=>`<td>${input("s_"+i+"_"+j)}</td>`).join("")}</tr>`).join("");
+function collectData(){let d={};document.querySelectorAll("input,textarea").forEach(e=>{let k=e.dataset.key||e.name;if(k)d[k]=e.type==="checkbox"?e.checked:e.value});document.querySelectorAll(".status button.on").forEach(e=>d[e.dataset.key]=e.dataset.v);return d}
+function saveData(){localStorage.setItem("claytonPMv4",JSON.stringify(collectData()));}
+function saveProgress(){saveData();let m=document.getElementById("completeMsg");m.textContent="Progress saved on this device.";m.classList.add("show")}
+function loadData(){let d=JSON.parse(localStorage.getItem("claytonPMv4")||"{}");document.querySelectorAll("input,textarea").forEach(e=>{let k=e.dataset.key||e.name;if(k&&d[k]!=null){if(e.type==="checkbox")e.checked=!!d[k];else e.value=d[k]}});document.querySelectorAll(".status button").forEach(e=>{if(d[e.dataset.key]===e.dataset.v){e.classList.add("on");if(e.dataset.v==="U"||e.dataset.v==="R")e.closest(".item").querySelector(".deficiency").classList.add("show")}})}
+function completeInspection(){saveData();let d=collectData(),missing=[];[["customer","Customer"],["date","Date"],["model","Model"],["serial","Serial Number"],["claytonRep","Clayton Representative"]].forEach(([k,n])=>{if(!d[k])missing.push(n)});let m=document.getElementById("completeMsg");if(missing.length){m.textContent="Complete these fields first: "+missing.join(", ")+ ".";m.classList.add("show");return}m.innerHTML="<b>Inspection complete.</b><br>The report is saved locally. Use Generate Final Report / PDF to create the PDF. Automatic email and central history will be connected in the deployed version.";m.classList.add("show")}
+document.addEventListener("input",saveData);loadData();let date=document.querySelector('input[name="date"]');if(date&&!date.value){date.value=new Date().toISOString().slice(0,10);saveData()}
+
+function setupSignature(id){
+ const c=document.getElementById(id); if(!c)return;
+ const ctx=c.getContext("2d");
+ function resize(){
+   const data=c.toDataURL();
+   const r=c.getBoundingClientRect(), scale=window.devicePixelRatio||1;
+   c.width=Math.max(1,r.width*scale); c.height=Math.max(1,r.height*scale);
+   ctx.setTransform(scale,0,0,scale,0,0); ctx.lineWidth=2; ctx.lineCap="round";
+   if(data && data!=="data:,"){let im=new Image();im.onload=()=>ctx.drawImage(im,0,0,r.width,r.height);im.src=data}
+ }
+ resize();
+ let drawing=false;
+ const p=e=>{const r=c.getBoundingClientRect();return [e.clientX-r.left,e.clientY-r.top]};
+ c.addEventListener("pointerdown",e=>{drawing=true;c.setPointerCapture(e.pointerId);let [x,y]=p(e);ctx.beginPath();ctx.moveTo(x,y)});
+ c.addEventListener("pointermove",e=>{if(!drawing)return;let [x,y]=p(e);ctx.lineTo(x,y);ctx.stroke()});
+ c.addEventListener("pointerup",()=>{drawing=false;saveSignature(id)});
+ c.addEventListener("pointercancel",()=>{drawing=false});
+}
+function saveSignature(id){localStorage.setItem("claytonPMv4_"+id,document.getElementById(id).toDataURL())}
+function restoreSignature(id){let s=localStorage.getItem("claytonPMv4_"+id),c=document.getElementById(id);if(!s||!c)return;let im=new Image();im.onload=()=>{let r=c.getBoundingClientRect();c.getContext("2d").drawImage(im,0,0,r.width,r.height)};im.src=s}
+function clearSignature(id){let c=document.getElementById(id),ctx=c.getContext("2d");ctx.clearRect(0,0,c.width,c.height);localStorage.removeItem("claytonPMv4_"+id)}
+["customerSignature","claytonSignature"].forEach(id=>{setupSignature(id);setTimeout(()=>restoreSignature(id),50)});
+
+</script></body></html>
